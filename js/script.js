@@ -352,18 +352,34 @@ function toggleAutoScroll() {
 // --- FULLSCREEN (sembunyikan address bar browser) ---
 function toggleFullscreen() {
     const btn = document.getElementById('fullscreen-btn');
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().then(() => {
-            if (btn) btn.innerHTML = '<i class="fas fa-compress"></i>';
-        }).catch(() => {});
-    } else {
-        document.exitFullscreen();
-        if (btn) btn.innerHTML = '<i class="fas fa-expand"></i>';
+    const el = document.documentElement;
+    const isFs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+
+    const enter = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+
+    if (!isFs) {
+        if (enter) {
+            enter.call(el).then(() => {
+                if (btn) { btn.innerHTML = '<i class="fas fa-compress"></i>'; btn.classList.add('active'); }
+            }).catch(() => {
+                // Fullscreen API tidak didukung/ditolak (umum di beberapa WebView) - tidak crash, cukup diamkan.
+            });
+        }
+    } else if (exit) {
+        exit.call(document);
+        if (btn) { btn.innerHTML = '<i class="fas fa-expand"></i>'; btn.classList.remove('active'); }
     }
 }
-document.addEventListener('fullscreenchange', () => {
-    const btn = document.getElementById('fullscreen-btn');
-    if (btn) btn.innerHTML = document.fullscreenElement ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(evt => {
+    document.addEventListener(evt, () => {
+        const btn = document.getElementById('fullscreen-btn');
+        const isFs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+        if (btn) {
+            btn.innerHTML = isFs ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+            btn.classList.toggle('active', !!isFs);
+        }
+    });
 });
 
 // --- SETUP ---
