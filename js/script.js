@@ -5,7 +5,6 @@ const video = document.getElementById('video-player');
 const subInput = document.getElementById('subtitle-input');
 let confirmCallback = null;
 
-// --- FUNGSI DIALOG & HISTORY ---
 function niceConfirm(msg, callback) {
     document.getElementById('confirm-msg').innerText = msg;
     document.getElementById('custom-confirm').style.display = 'flex';
@@ -47,7 +46,6 @@ function updateUndoButtons() {
     if(redoBtn) redoBtn.disabled = redoStack.length === 0;
 }
 
-// --- FUNGSI RESET / HAPUS DRAFT ---
 function clearDraft() {
     niceConfirm("Hapus semua draft dan reset editor?", (ok) => { 
         if(ok) { 
@@ -57,7 +55,6 @@ function clearDraft() {
     });
 }
 
-// --- FUNGSI WAKTU ---
 function formatTime(seconds) {
     const h = Math.floor(seconds / 3600), 
           m = Math.floor((seconds % 3600) / 60), 
@@ -74,7 +71,6 @@ function timeToSec(str) {
     return +parts[0] || 0;
 }
 
-// --- FUNGSI SYNC (DENGAN KOMPENSASI 200MS) ---
 function setMarkerAt(index, type) {
     if (!video.src) return alert("Pilih video terlebih dahulu!");
     saveHistory();
@@ -83,8 +79,6 @@ function setMarkerAt(index, type) {
     const sub = subtitles[index];
 
     if (type === 'start') {
-        // KOMPENSASI JEDA REAKSI: Kurangi 0.2 detik agar subtitle tidak telat muncul
-        // Pastikan waktu tidak menjadi negatif
         sub.start = Math.max(0, now - 0.2); 
     } else {
         if (now < sub.start) {
@@ -119,7 +113,6 @@ function applyMusicFormat(index) {
     renderEditor(subtitles, false);
 }
 
-// --- CORE EDITOR ---
 function renderEditor(data, recordHistory = true) {
     subtitles = data;
     if (recordHistory) saveHistory();
@@ -218,13 +211,8 @@ function saveSubtitle() {
     a.href = url; a.download = "subtitle_edited.srt"; a.click();
 }
 
-// --- OVERLAY & LOOP ---
 function getCurrentTime() { return video.currentTime; }
 function seekTo(t) { video.currentTime = t; }
-
-// --- SKALA FONT RELATIF TERHADAP RESOLUSI ASLI VIDEO (mirip ASS/FFmpeg) ---
-// Angka di slider "Ukuran" dianggap sebagai font size pada resolusi ASLI video
-// (persis seperti hardsub ffmpeg), lalu di-scale ke ukuran render di layar.
 let subtitleScaleFactor = 1;
 
 function updateScaleFactor() {
@@ -235,13 +223,11 @@ function updateScaleFactor() {
     if (!containerW || !containerH) return;
 
     let videoW = video.videoWidth, videoH = video.videoHeight;
-    // Kalau video belum ke-load metadata-nya (atau sumber YouTube), pakai referensi 1080p
     if (!videoW || !videoH) { videoW = 1920; videoH = 1080; }
 
     const videoAspect = videoW / videoH;
     const containerAspect = containerW / containerH;
     let renderedH;
-    // object-fit: contain -> hitung tinggi video yang benar-benar tampil di dalam viewport
     if (videoAspect > containerAspect) {
         renderedH = containerW / videoAspect;
     } else {
@@ -331,8 +317,6 @@ function updateLoop() {
             else el.classList.remove('highlight');
         });
 
-        // Auto-scroll ke cue aktif pertama (index terkecil), meski ada beberapa
-        // subtitle yang jalan bareng (mis. romaji + terjemahan pada opening/ending).
         if (autoScrollEnabled && activeIndices.size > 0) {
             const firstActiveIdx = Math.min(...activeIndices);
             const targetEl = cueEls[firstActiveIdx];
@@ -342,14 +326,12 @@ function updateLoop() {
     requestAnimationFrame(updateLoop);
 }
 
-// --- AUTO SCROLL TOGGLE ---
 function toggleAutoScroll() {
     autoScrollEnabled = !autoScrollEnabled;
     const btn = document.getElementById('autoscroll-btn');
     if (btn) btn.classList.toggle('active', autoScrollEnabled);
 }
 
-// --- FULLSCREEN (sembunyikan address bar browser) ---
 function toggleFullscreen() {
     const btn = document.getElementById('fullscreen-btn');
     const el = document.documentElement;
@@ -363,7 +345,6 @@ function toggleFullscreen() {
             enter.call(el).then(() => {
                 if (btn) { btn.innerHTML = '<i class="fas fa-compress"></i>'; btn.classList.add('active'); }
             }).catch(() => {
-                // Fullscreen API tidak didukung/ditolak (umum di beberapa WebView) - tidak crash, cukup diamkan.
             });
         }
     } else if (exit) {
@@ -382,7 +363,6 @@ function toggleFullscreen() {
     });
 });
 
-// --- SETUP ---
 function togglePlay() { video.paused ? video.play() : video.pause(); updatePlayIcon(); }
 function updatePlayIcon() {
     const btn = document.getElementById('play-pause-btn');
@@ -391,16 +371,14 @@ function updatePlayIcon() {
 video.addEventListener('play', updatePlayIcon);
 video.addEventListener('pause', updatePlayIcon);
 
-// --- SKIP MAJU/MUNDUR ---
 function seekBy(delta) {
     if (!video.src) return;
     const dur = isFinite(video.duration) ? video.duration : Infinity;
     video.currentTime = Math.max(0, Math.min(dur, video.currentTime + delta));
 }
 
-// --- KECEPATAN PUTAR ---
 const speedSteps = [0.5, 0.75, 1, 1.25, 1.5, 2];
-let speedIndex = 2; // default 1x
+let speedIndex = 2; 
 function cycleSpeed() {
     speedIndex = (speedIndex + 1) % speedSteps.length;
     const rate = speedSteps[speedIndex];
@@ -409,7 +387,6 @@ function cycleSpeed() {
     if (btn) btn.textContent = rate + 'x';
 }
 
-// --- STEPPER UKURAN FONT ---
 function adjustFontSize(delta) {
     const input = document.getElementById('font-size');
     let val = parseInt(input.value, 10) + delta;
@@ -424,7 +401,7 @@ function toggleRatio() {
     const vp = document.getElementById('video-viewport'), btn = document.getElementById('ratio-btn');
     vp.classList.toggle('portrait'); 
     btn.innerHTML = vp.classList.contains('portrait') ? '<i class="fas fa-display"></i>' : '<i class="fas fa-mobile-screen"></i>';
-    setTimeout(updateScaleFactor, 350); // tunggu transisi CSS 0.3s selesai
+    setTimeout(updateScaleFactor, 350); 
 }
 
 subInput.onchange = e => {
