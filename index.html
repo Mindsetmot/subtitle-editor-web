@@ -22,64 +22,88 @@
     </div>
 </div>
 
+<!-- PANEL PENGATURAN: fixed di sisi kanan (area subtitle), muncul dari atas -->
+<div id="settings-bar" class="settings-bar">
+    <div class="settings-header">
+        <b><i class="fas fa-sliders"></i> Pengaturan</b>
+        <button class="btn-close-settings" onclick="toggleSettings()" title="Tutup"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="settings-content-wrapper">
+        <div class="style-group">
+            <label><b><i class="fas fa-file-video"></i> Media</b></label>
+            <input type="file" id="video-input" accept="video/*" style="font-size: 0.8rem;">
+        </div>
+
+        <div class="style-group">
+            <label><b><i class="fas fa-file-lines"></i> Subtitle</b></label>
+            <input type="file" id="subtitle-input" accept=".srt,.vtt" style="font-size: 0.8rem;">
+        </div>
+
+        <div class="style-group">
+            <label><b><i class="fas fa-wand-magic-sparkles"></i> Gaya Teks</b></label>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+
+                <div class="fontsize-control">
+                    <span>Ukuran Font</span>
+                    <div class="stepper">
+                        <button type="button" class="btn-stepper" onclick="adjustFontSize(-1)"><i class="fas fa-minus"></i></button>
+                        <span id="font-size-display">14</span>
+                        <button type="button" class="btn-stepper" onclick="adjustFontSize(1)"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <input type="hidden" id="font-size" value="14">
+                </div>
+
+                <span>Outline: <input type="range" id="stroke-width" min="0" max="6" step="0.5" value="1.2" style="width:100%"></span>
+                <span>Tinggi (Y): <input type="range" id="y-pos" min="0" max="85" value="4" style="width:100%"></span>
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-top:5px;">
+                    <span>Warna Teks:</span>
+                    <input type="color" id="text-color" value="#ffffff" style="border:none; width:45px; height:45px; cursor:pointer; background:none;">
+                </div>
+            </div>
+        </div>
+
+        <div class="style-group">
+            <label><b><i class="fas fa-floppy-disk"></i> Aksi</b></label>
+            <button class="btn-action btn-download" onclick="saveSubtitle()">
+                <i class="fas fa-file-arrow-down"></i> SIMPAN
+            </button>
+            <button class="btn-action btn-danger" onclick="clearDraft()">
+                <i class="fas fa-trash-can"></i> HAPUS  DRAFT
+            </button>
+        </div>
+        <footer class="footer">
+            <p>&copy 2025 Floverse - All Rights Reserved</p>
+        </footer>
+    </div>
+</div>
+
 <div class="main-container">
     <div class="fixed-video-section">
         <div id="video-viewport">
             <div id="yt-player"></div>
-            <video id="video-player" controls style="display:none;"></video>
+            <video id="video-player" style="display:none;"></video>
             <div id="overlay-top" class="subtitle-overlay"></div>
             <div id="overlay-bottom" class="subtitle-overlay"></div>
         </div>
-        <div id="current-time-display">00:00:00.000</div>    
-        
-        <div class="fixed-top-controls">
-            <button class="btn-icon" onclick="toggleSettings()" title="Pengaturan"><i class="fas fa-sliders"></i></button>
-            <button class="btn-icon" id="play-pause-btn" onclick="togglePlay()"><i class="fas fa-play"></i></button>
-            <button class="btn-icon" id="undo-btn" onclick="undo()" disabled><i class="fas fa-rotate-left"></i></button>
-            <button class="btn-icon" id="redo-btn" onclick="redo()" disabled><i class="fas fa-rotate-right"></i></button>
-            <button class="btn-icon" onclick="toggleRatio()" id="ratio-btn" title="Ubah Rasio"><i class="fas fa-mobile-screen"></i></button>
-            <button class="btn-icon" onclick="document.body.classList.toggle('dark-mode')" title="Tema"><i class="fas fa-circle-half-stroke"></i></button>
-        </div>
+        <div id="current-time-display">00:00:00.000</div>
 
-        <div id="settings-bar" class="settings-bar">
-            <div class="settings-content-wrapper">
-                <div class="style-group">
-                    <label><b><i class="fas fa-file-video"></i> Media</b></label>
-                    <input type="file" id="video-input" accept="video/*" style="font-size: 0.8rem;">
-                    <div style="display:flex; gap:5px; margin-top:5px;">
-                    </div>
-                </div>
-
-                <div class="style-group">
-                    <label><b><i class="fas fa-file-lines"></i> Subtitle</b></label>
-                    <input type="file" id="subtitle-input" accept=".srt,.vtt" style="font-size: 0.8rem;">
-                </div>
-
-                <div class="style-group">
-                    <label><b><i class="fas fa-wand-magic-sparkles"></i> Gaya Teks</b></label>
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                        <span>Ukuran: <input type="range" id="font-size" min="12" max="80" value="14" style="width:100%"></span>
-                        <span>Outline: <input type="range" id="stroke-width" min="0" max="6" step="0.5" value="1.2" style="width:100%"></span>
-                        <span>Tinggi (Y): <input type="range" id="y-pos" min="0" max="85" value="4" style="width:100%"></span>
-                        <div style="display:flex; justify-content: space-between; align-items: center; margin-top:5px;">
-                            <span>Warna Teks:</span>
-                            <input type="color" id="text-color" value="#ffffff" style="border:none; width:45px; height:45px; cursor:pointer; background:none;">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="style-group">
-                    <label><b><i class="fas fa-floppy-disk"></i> Aksi</b></label>
-                    <button class="btn-action btn-download" onclick="saveSubtitle()">
-                        <i class="fas fa-file-arrow-down"></i> SIMPAN
-                    </button>
-                    <button class="btn-action btn-danger" onclick="clearDraft()">
-                        <i class="fas fa-trash-can"></i> HAPUS  DRAFT
-                    </button>                    
-                </div>
-                <footer class="footer">
-        <p>&copy 2025 Floverse - All Rights Reserved</p>
-    </footer>
+        <div class="video-controls-bar">
+            <div class="controls-row">
+                <button class="btn-icon" onclick="toggleSettings()" title="Pengaturan"><i class="fas fa-sliders"></i></button>
+                <button class="btn-icon" id="undo-btn" onclick="undo()" disabled title="Undo"><i class="fas fa-rotate-left"></i></button>
+                <button class="btn-icon" id="redo-btn" onclick="redo()" disabled title="Redo"><i class="fas fa-rotate-right"></i></button>
+                <button class="btn-icon" onclick="toggleRatio()" id="ratio-btn" title="Ubah Rasio"><i class="fas fa-mobile-screen"></i></button>
+                <button class="btn-icon" onclick="document.body.classList.toggle('dark-mode')" title="Tema"><i class="fas fa-circle-half-stroke"></i></button>
+                <button class="btn-icon active" id="autoscroll-btn" onclick="toggleAutoScroll()" title="Auto Scroll Subtitle"><i class="fas fa-arrows-up-down"></i></button>
+                <button class="btn-icon" id="fullscreen-btn" onclick="toggleFullscreen()" title="Sembunyikan Address Bar"><i class="fas fa-expand"></i></button>
+            </div>
+            <div class="controls-row">
+                <button class="btn-icon btn-skip" onclick="seekBy(-10)" title="Mundur 10 detik">-10s</button>
+                <button class="btn-icon btn-skip" onclick="seekBy(-5)" title="Mundur 5 detik">-5s</button>
+                <button class="btn-icon" id="play-pause-btn" onclick="togglePlay()" title="Play/Pause"><i class="fas fa-play"></i></button>
+                <button class="btn-icon btn-skip" onclick="seekBy(5)" title="Maju 5 detik">+5s</button>
+                <button class="btn-icon btn-skip" onclick="seekBy(10)" title="Maju 10 detik">+10s</button>
+                <button class="btn-icon" id="speed-btn" onclick="cycleSpeed()" title="Kecepatan Putar">1x</button>
             </div>
         </div>
     </div>
