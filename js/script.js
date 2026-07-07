@@ -1,4 +1,5 @@
 let isYouTube = false, subtitles = [], activeIndices = new Set();
+let autoScrollEnabled = true;
 let history = [], redoStack = [];
 const video = document.getElementById('video-player');
 const subInput = document.getElementById('subtitle-input');
@@ -131,7 +132,7 @@ function renderEditor(data, recordHistory = true) {
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <div style="display:flex; align-items:center; gap:10px; flex:1;">
                     <span style="font-weight:bold; color:var(--primary-color); min-width:25px;">#${i+1}</span>
-                    <input class="timestamp-input" value="${sub.timeLine}" onchange="updateTimestamp(${i}, this.value)" style="flex:1; border:none; background:rgba(255,255,255,0.05); color:white; padding:4px 8px; border-radius:4px;">
+                    <input class="timestamp-input" value="${sub.timeLine}" onchange="updateTimestamp(${i}, this.value)" style="flex:1;">
                 </div>
                 <div style="display:flex; gap:5px; margin-left:10px;">
                     <button class="btn-small" onclick="seekTo(${sub.start})"><i class="fas fa-play"></i></button>
@@ -221,13 +222,50 @@ function saveSubtitle() {
 function getCurrentTime() { return video.currentTime; }
 function seekTo(t) { video.currentTime = t; }
 
+// --- SKALA FONT RELATIF TERHADAP RESOLUSI ASLI VIDEO (mirip ASS/FFmpeg) ---
+// Angka di slider "Ukuran" dianggap sebagai font size pada resolusi ASLI video
+// (persis seperti hardsub ffmpeg), lalu di-scale ke ukuran render di layar.
+let subtitleScaleFactor = 1;
+
+function updateScaleFactor() {
+    const viewport = document.getElementById('video-viewport');
+    if (!viewport) return;
+    const containerW = viewport.clientWidth;
+    const containerH = viewport.clientHeight;
+    if (!containerW || !containerH) return;
+
+    let videoW = video.videoWidth, videoH = video.videoHeight;
+    // Kalau video belum ke-load metadata-nya (atau sumber YouTube), pakai referensi 1080p
+    if (!videoW || !videoH) { videoW = 1920; videoH = 1080; }
+
+    const videoAspect = videoW / videoH;
+    const containerAspect = containerW / containerH;
+    let renderedH;
+    // object-fit: contain -> hitung tinggi video yang benar-benar tampil di dalam viewport
+    if (videoAspect > containerAspect) {
+        renderedH = containerW / videoAspect;
+    } else {
+        renderedH = containerH;
+    }
+    subtitleScaleFactor = renderedH / videoH;
+}
+
+window.addEventListener('resize', updateScaleFactor);
+window.addEventListener('orientationchange', () => setTimeout(updateScaleFactor, 300));
+video.addEventListener('loadedmetadata', updateScaleFactor);
+
 function applyStyles(el) {
     const fs = document.getElementById('font-size').value;
     const sw = document.getElementById('stroke-width').value;
     const globalColor = document.getElementById('text-color').value;
-    el.style.fontSize = fs + 'px';
+    const scaledFs = fs * subtitleScaleFactor;
+    const scaledSw = sw * subtitleScaleFactor;
+    const padV = Math.max(2, 6 * subtitleScaleFactor);
+    const padH = Math.max(4, 12 * subtitleScaleFactor);
+    el.style.fontSize = scaledFs + 'px';
+    el.style.padding = `${padV}px ${padH}px`;
     if (!el.innerHTML.includes('color=')) el.style.color = globalColor;
-    el.style.textShadow = sw > 0 ? `-${sw}px -${sw}px 0 #000, ${sw}px -${sw}px 0 #000, -${sw}px ${sw}px 0 #000, ${sw}px ${sw}px 0 #000` : "none";
+    el.style.textShadow = scaledSw > 0 ? `-${scaledSw}px -${scaledSw}px 0 #000, ${scaledSw}px -${scaledSw}px 0 #000, -${scaledSw}px ${scaledSw}px 0 #000, ${scaledSw}px ${scaledSw}px 0 #000` : "none";
 }
 
 function updateLoop() {
@@ -287,15 +325,46 @@ function updateLoop() {
     const currentActive = new Set(subtitles.map((s, i) => (now >= s.start && now < s.end ? i : -1)).filter(i => i !== -1));
     if (JSON.stringify([...currentActive]) !== JSON.stringify([...activeIndices])) {
         activeIndices = currentActive;
-        document.querySelectorAll('.subtitle-cue').forEach((el, idx) => {
-            if (activeIndices.has(idx)) {
-                el.classList.add('highlight');
-                if (activeIndices.size === 1) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } else el.classList.remove('highlight');
+        const cueEls = document.querySelectorAll('.subtitle-cue');
+        cueEls.forEach((el, idx) => {
+            if (activeIndices.has(idx)) el.classList.add('highlight');
+            else el.classList.remove('highlight');
         });
+
+        // Auto-scroll ke cue aktif pertama (index terkecil), meski ada beberapa
+        // subtitle yang jalan bareng (mis. romaji + terjemahan pada opening/ending).
+        if (autoScrollEnabled && activeIndices.size > 0) {
+            const firstActiveIdx = Math.min(...activeIndices);
+            const targetEl = cueEls[firstActiveIdx];
+            if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
     requestAnimationFrame(updateLoop);
 }
+
+// --- AUTO SCROLL TOGGLE ---
+function toggleAutoScroll() {
+    autoScrollEnabled = !autoScrollEnabled;
+    const btn = document.getElementById('autoscroll-btn');
+    if (btn) btn.classList.toggle('active', autoScrollEnabled);
+}
+
+// --- FULLSCREEN (sembunyikan address bar browser) ---
+function toggleFullscreen() {
+    const btn = document.getElementById('fullscreen-btn');
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+            if (btn) btn.innerHTML = '<i class="fas fa-compress"></i>';
+        }).catch(() => {});
+    } else {
+        document.exitFullscreen();
+        if (btn) btn.innerHTML = '<i class="fas fa-expand"></i>';
+    }
+}
+document.addEventListener('fullscreenchange', () => {
+    const btn = document.getElementById('fullscreen-btn');
+    if (btn) btn.innerHTML = document.fullscreenElement ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+});
 
 // --- SETUP ---
 function togglePlay() { video.paused ? video.play() : video.pause(); updatePlayIcon(); }
@@ -303,11 +372,43 @@ function updatePlayIcon() {
     const btn = document.getElementById('play-pause-btn');
     if(btn) btn.innerHTML = video.paused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
 }
+video.addEventListener('play', updatePlayIcon);
+video.addEventListener('pause', updatePlayIcon);
+
+// --- SKIP MAJU/MUNDUR ---
+function seekBy(delta) {
+    if (!video.src) return;
+    const dur = isFinite(video.duration) ? video.duration : Infinity;
+    video.currentTime = Math.max(0, Math.min(dur, video.currentTime + delta));
+}
+
+// --- KECEPATAN PUTAR ---
+const speedSteps = [0.5, 0.75, 1, 1.25, 1.5, 2];
+let speedIndex = 2; // default 1x
+function cycleSpeed() {
+    speedIndex = (speedIndex + 1) % speedSteps.length;
+    const rate = speedSteps[speedIndex];
+    video.playbackRate = rate;
+    const btn = document.getElementById('speed-btn');
+    if (btn) btn.textContent = rate + 'x';
+}
+
+// --- STEPPER UKURAN FONT ---
+function adjustFontSize(delta) {
+    const input = document.getElementById('font-size');
+    let val = parseInt(input.value, 10) + delta;
+    val = Math.max(1, Math.min(200, val));
+    input.value = val;
+    const display = document.getElementById('font-size-display');
+    if (display) display.textContent = val;
+}
+
 function toggleSettings() { document.getElementById('settings-bar').classList.toggle('active'); }
 function toggleRatio() { 
     const vp = document.getElementById('video-viewport'), btn = document.getElementById('ratio-btn');
     vp.classList.toggle('portrait'); 
     btn.innerHTML = vp.classList.contains('portrait') ? '<i class="fas fa-display"></i>' : '<i class="fas fa-mobile-screen"></i>';
+    setTimeout(updateScaleFactor, 350); // tunggu transisi CSS 0.3s selesai
 }
 
 subInput.onchange = e => {
@@ -333,4 +434,5 @@ window.onload = () => {
         saveHistory();
     }
     updatePlayIcon();
+    updateScaleFactor();
 }
