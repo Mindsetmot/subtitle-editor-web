@@ -123,8 +123,8 @@ body {
     }
 
     .fixed-video-section {
-        width: 42%;
-        max-width: 42%;
+        width: 50%;
+        max-width: 50%;
         flex-shrink: 0;
         align-self: flex-start;
         display: flex;
@@ -334,7 +334,7 @@ video, #yt-player {
     left: 0; 
     right: 0; 
     bottom: 0;
-    z-index: 999; 
+    z-index: 1500; 
     box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
     overflow-y: auto; 
     display: none; 
@@ -615,6 +615,6 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 5px; }
 /* Ditulis paling akhir supaya tidak ketimpa oleh definisi .settings-bar di atas */
 @media (orientation: landscape) {
     .settings-bar {
-        left: 42%;
+        left: 50%;
     }
 }
