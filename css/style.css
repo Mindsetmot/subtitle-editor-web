@@ -116,7 +116,6 @@ body {
      position: relative; 
 }
 
-/* LANDSCAPE MODE: video kiri, subtitle editor kanan */
 @media (orientation: landscape) {
     .main-container {
         flex-direction: row;
@@ -159,7 +158,6 @@ body {
 }
 
         
-        /* VIDEO SECTION */
 .fixed-video-section { 
      flex-shrink: 0; 
      background-color: #000; 
@@ -191,7 +189,7 @@ video, #yt-player {
     height: 100%; 
     object-fit: contain; 
 }   
-        /* SUBTITLE OVERLAY */
+
 .subtitle-overlay { 
     position: absolute; 
     left: 0; 
@@ -252,22 +250,21 @@ video, #yt-player {
     gap: 5px;
 }
 
-.btn-start { background-color: #28a745; } /* Hijau */
-.btn-end { background-color: #dc3545; }   /* Merah */
+.btn-start { background-color: #28a745; } 
+.btn-end { background-color: #dc3545; }  
 
 .btn-sync-touch:active {
     transform: scale(0.95);
     opacity: 0.8;
 }
 
-/* Memastikan area klik cukup besar di HP */
 .manage-btns .btn-small {
     padding: 10px 15px;
 }
 
 .btn-music {
-    background-color: #6f42c1 !important; /* Ungu */
-    flex: 0.5 !important; /* Lebih ramping dari tombol START/END */
+    background-color: #6f42c1 !important; 
+    flex: 0.5 !important; 
 }
 
 .btn-music:active {
@@ -275,7 +272,6 @@ video, #yt-player {
     transform: scale(0.9);
 }
         
-        /* CONTROLS */
 .video-controls-bar { 
     background: var(--editor-bg); 
     padding: 10px; 
@@ -325,7 +321,6 @@ video, #yt-player {
     border-color: var(--primary-color);
 }
 
-        /* SETTINGS BAR */
 .settings-bar { 
     background: var(--editor-bg); 
     border-bottom: 4px solid var(--primary-color); 
@@ -439,7 +434,6 @@ video, #yt-player {
     font-size: 1.1rem;
 }
 
-/* RANGE SLIDER (Outline, Tinggi Y) - biar konsisten & sesuai tema */
 input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
@@ -509,7 +503,6 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 5px; }
     color: white; 
 }
 
-        /* EDITOR */
 #subtitle-editor { 
      flex: 1; 
      overflow-y: auto; 
@@ -611,8 +604,6 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 5px; }
   margin-bottom: 0.5rem;
 }
 
-/* LANDSCAPE: panel settings hanya menutupi kolom kanan (sejajar subtitle editor) */
-/* Ditulis paling akhir supaya tidak ketimpa oleh definisi .settings-bar di atas */
 @media (orientation: landscape) {
     .settings-bar {
         left: 50%;
