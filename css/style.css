@@ -116,6 +116,37 @@ body {
      position: relative; 
 }
 
+/* LANDSCAPE MODE: video kiri, subtitle editor kanan */
+@media (orientation: landscape) {
+    .main-container {
+        flex-direction: row;
+    }
+
+    .fixed-video-section {
+        width: 42%;
+        max-width: 42%;
+        flex-shrink: 0;
+        align-self: flex-start;
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        max-height: 100%;
+        overflow-y: auto;
+        border-right: 1px solid var(--border-color);
+    }
+
+    #video-viewport,
+    #video-viewport.portrait {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    #subtitle-editor {
+        width: 58%;
+        height: 100%;
+    }
+}
+
 @keyframes popupFade {
     from {
         transform: scale(.8);
@@ -173,7 +204,7 @@ video, #yt-player {
 }
 
 #overlay-top { 
-    top: 5%; 
+    top: 7%; 
 }
 #overlay-bottom { 
     bottom: 10%; 
@@ -182,7 +213,7 @@ video, #yt-player {
     display: inline-block; 
     color: #fff; 
     font-weight: bold; 
-    padding: 2px 10px; 
+    padding: 6px 12px; 
     text-align: center; 
     white-space: pre-wrap; 
     line-height: 1.3; 
@@ -245,13 +276,19 @@ video, #yt-player {
 }
         
         /* CONTROLS */
-.fixed-top-controls { 
+.video-controls-bar { 
     background: var(--editor-bg); 
     padding: 10px; 
     display: flex; 
-    justify-content: center; 
-    gap: 10px; 
+    flex-direction: column; 
+    gap: 8px; 
     border-bottom: 1px solid var(--border-color); 
+}
+
+.controls-row { 
+    display: flex; 
+    justify-content: center; 
+    gap: 8px; 
     flex-wrap: wrap; 
 }
 
@@ -266,6 +303,13 @@ video, #yt-player {
     transition: 0.2s; 
 }
 
+.btn-icon.btn-skip {
+    font-size: 0.85rem;
+    font-weight: bold;
+    padding: 10px 10px;
+    min-width: 44px;
+}
+
 .btn-icon:hover:not(:disabled) { 
     background: var(--primary-color); 
     color: white; 
@@ -275,17 +319,23 @@ video, #yt-player {
     opacity: 0.3; 
 }
 
+.btn-icon.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
         /* SETTINGS BAR */
 .settings-bar { 
     background: var(--editor-bg); 
     border-bottom: 4px solid var(--primary-color); 
-    position: absolute; 
-    top: 100%; 
+    position: fixed; 
+    top: 0; 
     left: 0; 
     right: 0; 
+    bottom: 0;
     z-index: 999; 
     box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
-    max-height: calc(100vh - 300px); 
     overflow-y: auto; 
     display: none; 
     flex-direction: column; 
@@ -298,11 +348,38 @@ video, #yt-player {
     display: flex !important; 
 }
 
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.btn-close-settings {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.btn-close-settings:active {
+    background: var(--primary-color);
+    color: white;
+}
+
 .settings-content-wrapper { 
     display: flex; 
     flex-direction: column; 
     gap: 15px; 
-    padding-bottom: 150px; 
+    padding-bottom: 30px; 
 } 
         
 .style-group { 
@@ -319,6 +396,93 @@ video, #yt-player {
     margin-bottom: 5px; 
     display: block; 
 }
+
+.fontsize-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.stepper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.btn-stepper {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-stepper:active {
+    transform: scale(0.92);
+    opacity: 0.85;
+}
+
+#font-size-display {
+    min-width: 32px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* RANGE SLIDER (Outline, Tinggi Y) - biar konsisten & sesuai tema */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 4px;
+    background: var(--border-color);
+    outline: none;
+    accent-color: var(--primary-color);
+    margin: 6px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+    border: 3px solid var(--editor-bg);
+    box-shadow: 0 0 0 1px var(--border-color);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    cursor: pointer;
+    border: 3px solid var(--editor-bg);
+    box-shadow: 0 0 0 1px var(--border-color);
+}
+
+/* COLOR PICKER */
+input[type="color"] {
+    -webkit-appearance: none;
+    appearance: none;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    padding: 0;
+}
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+input[type="color"]::-webkit-color-swatch { border: none; border-radius: 5px; }
 
 .btn-action { 
     width: 100%; 
@@ -436,13 +600,21 @@ video, #yt-player {
 .footer {
   text-align: center;
   padding: 1rem;
-  color: var(--text-light);
-  font-size: 0.95rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  font-size: 0.85rem;
   border-top: 1px solid var(--border-color);
-  background-color: var(--card-bg);
   margin-top: auto;
 }
 
 .footer p {
   margin-bottom: 0.5rem;
+}
+
+/* LANDSCAPE: panel settings hanya menutupi kolom kanan (sejajar subtitle editor) */
+/* Ditulis paling akhir supaya tidak ketimpa oleh definisi .settings-bar di atas */
+@media (orientation: landscape) {
+    .settings-bar {
+        left: 42%;
+    }
 }
